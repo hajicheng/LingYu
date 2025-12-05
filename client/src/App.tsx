@@ -1,22 +1,20 @@
-import { Routes, Route } from 'react-router-dom'
+// useRoutes 是一个勾子用来渲染路由配置
+import { useRoutes } from 'react-router-dom'
+
+// Toaster 是一个组件，用于显示 toast 消息
 import { Toaster } from '@/components/ui/toaster'
-import Layout from '@/components/layout/Layout'
-import HomePage from '@/pages/HomePage'
-import LibraryPage from '@/pages/LibraryPage'
-import ProgressPage from '@/pages/ProgressPage'
-import ReviewPage from '@/pages/ReviewPage'
+
+// routes 是路由配置数组
+import routes from '@/router'
 
 function App() {
+
+  // useRoutes 会根据路由配置渲染对应的组件
+  const element = useRoutes(routes)
+  
   return (
     <>
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<HomePage />} />
-          <Route path="library" element={<LibraryPage />} />
-          <Route path="progress" element={<ProgressPage />} />
-          <Route path="review" element={<ReviewPage />} />
-        </Route>
-      </Routes>
+      {element}
       <Toaster />
     </>
   )
