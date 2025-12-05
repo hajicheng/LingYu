@@ -2,11 +2,23 @@ import { PrismaClient } from '@prisma/client';
 import OpenAI from 'openai';
 
 const prisma = new PrismaClient();
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 export class RAGService {
+  private openai: OpenAI | null = null;
+
+  /**
+   * 获取或创建 OpenAI 客户端实例
+   */
+  private getOpenAIClient(): OpenAI {
+    if (!this.openai) {
+      const apiKey = process.env.OPENAI_API_KEY;
+      if (!apiKey) {
+        throw new Error('OPENAI_API_KEY 环境变量未配置。请在 .env 文件中设置 OPENAI_API_KEY。');
+      }
+      this.openai = new OpenAI({ apiKey });
+    }
+    return this.openai;
+  }
   /**
    * 个性化问答：基于用户已学习的内容回答问题
    */
@@ -32,7 +44,8 @@ export class RAGService {
         .join('\n\n---\n\n');
 
       // 4. 调用OpenAI生成回答
-      const response = await openai.chat.completions.create({
+      const openaiClient = this.getOpenAIClient();
+      const response = await openaiClient.chat.completions.create({
         model: "gpt-3.5-turbo",
         messages: [
           {
@@ -229,7 +242,7 @@ ${context}
     // 简单的文本相似度（基于共同词汇）
     const words1 = content1.content.toLowerCase().split(/\s+/);
     const words2 = content2.content.toLowerCase().split(/\s+/);
-    const commonWords = words1.filter(word => words2.includes(word) && word.length > 2);
+    const commonWords = words1.filter((word: string) => words2.includes(word) && word.length > 2);
     similarity += Math.min(commonWords.length * 0.1, 0.5);
 
     return Math.min(similarity, 1);
